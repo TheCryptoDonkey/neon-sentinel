@@ -1,4 +1,4 @@
-import qrcode from 'qrcode-generator';
+import { encode, isDark, type QrCode } from '@forgesworn/qr';
 
 export interface ValueForValueConfig {
   configured: boolean;
@@ -106,16 +106,18 @@ export function getValueForValueConfig(): ValueForValueConfig {
   return cachedConfig;
 }
 
+/** Error correction M, byte mode, smallest version that fits, as the old encoder used. */
+export function encodeValueForValueQr(value: string): QrCode {
+  return encode(value, { ecc: 'M', mode: 'byte' });
+}
+
 export function getValueForValueQrCanvas(qrValue: string): HTMLCanvasElement | null {
   if (!qrValue) return null;
   const cached = cachedQrs.get(qrValue);
   if (cached) return cached;
 
-  const qr = qrcode(0, 'M');
-  qr.addData(qrValue, 'Byte');
-  qr.make();
-
-  const count = qr.getModuleCount();
+  const qr = encodeValueForValueQr(qrValue);
+  const count = qr.size;
   const cell = Math.max(3, Math.floor(QR_PIXELS / (count + QR_MARGIN * 2)));
   const size = (count + QR_MARGIN * 2) * cell;
   const canvas = document.createElement('canvas');
@@ -129,7 +131,7 @@ export function getValueForValueQrCanvas(qrValue: string): HTMLCanvasElement | n
   qrCtx.fillStyle = '#02040b';
   for (let row = 0; row < count; row += 1) {
     for (let col = 0; col < count; col += 1) {
-      if (!qr.isDark(row, col)) continue;
+      if (!isDark(qr, col, row)) continue;
       qrCtx.fillRect((col + QR_MARGIN) * cell, (row + QR_MARGIN) * cell, cell, cell);
     }
   }

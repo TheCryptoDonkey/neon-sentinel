@@ -20,8 +20,8 @@
     "test:claim-recovery": "node tools/claim-recovery-smoke.mjs"
   },
   "dependencies": {
+    "@forgesworn/qr": "^0.1.0",
     "@types/three": "^0.184.1",
-    "qrcode-generator": "^2.0.4",
     "signet-login": "0.17.3",
     "three": "^0.184.0"
   },
